@@ -6,7 +6,7 @@ describe("Institution Contract", function () {
     mockInstitute_acc,
     mockInvalid_acc,
     mockInstitute,
-    mockInstitute_course,
+    mockInstituteCourses,
     institution,
     certification;
 
@@ -22,7 +22,7 @@ describe("Institution Contract", function () {
       institute_link: "www.heritageit.edu",
     };
 
-    mockInstitute_course = [
+    mockInstituteCourses = [
       {
         course_name: "Computer Science and Engineering",
         course_code: "CSE",
@@ -48,6 +48,8 @@ describe("Institution Contract", function () {
     certification = await Certification.deploy(await institution.getAddress(), {
       from: mockOwner_acc,
     });
+
+    // console.log('Address:', await certification.getAddress());
   });
 
   describe("Deployment of Institution Contract", () => {
@@ -68,7 +70,7 @@ describe("Institution Contract", function () {
           mockInstitute.institute_name,
           mockInstitute.institute_acronym,
           mockInstitute.institute_link,
-          mockInstitute_course
+          mockInstituteCourses
         )
       ).to.be.revertedWithCustomError(attackerConnectedAccounts, "NotOwner");
     });
@@ -79,7 +81,7 @@ describe("Institution Contract", function () {
         mockInstitute.institute_name,
         mockInstitute.institute_acronym,
         mockInstitute.institute_link,
-        mockInstitute_course,
+        mockInstituteCourses,
         { from: mockOwner_acc }
       );
 
@@ -91,6 +93,33 @@ describe("Institution Contract", function () {
       assert.equal(logs.length, 1);
       assert.equal(logs[0].fragment.name, "instituteAdded");
       assert.equal(logs[0].args._instituteName, mockInstitute.institute_name);
+
+      const institute_data = await certification.getInstituteData(
+            mockInstitute_acc.address
+          );
+
+          console.log({institute_data})
+          // console.log({institute_data})
+          assert.equal(institute_data[0], mockInstitute.institute_name);
+          assert.equal(institute_data[1], mockInstitute.institute_acronym);
+          assert.equal(institute_data[2], mockInstitute.institute_link);
+  
+          console.log('3', institute_data[3])
+
+          const formattedInstituteMockCoursesData = mockInstituteCourses.map((x) => {
+            return { course_name: x.course_name };
+          });
+
+          // ! THERE'S NO COURSE_CODE in the Institution.sol::Course struct, contrary to the 
+          const formattedInstituteCoursesData = mockInstituteCourses.map((x) => {
+            return { course_name: x.course_name };
+          });
+      
+          assert.equal(
+            JSON.stringify(formattedInstituteCoursesData),
+            JSON.stringify(formattedInstituteMockCoursesData),
+            "the courses of the institute is incorrect"
+          );
     });
 
     it("Fails if Institute already existed", async function () {
@@ -100,7 +129,7 @@ describe("Institution Contract", function () {
         mockInstitute.institute_name,
         mockInstitute.institute_acronym,
         mockInstitute.institute_link,
-        mockInstitute_course,
+        mockInstituteCourses,
         { from: mockOwner_acc }
       );
 
@@ -110,7 +139,7 @@ describe("Institution Contract", function () {
           mockInstitute.institute_name,
           mockInstitute.institute_acronym,
           mockInstitute.institute_link,
-          mockInstitute_course,
+          mockInstituteCourses,
           { from: mockOwner_acc }
         )
       ).to.be.revertedWith("Institute with token already exists");
@@ -127,27 +156,6 @@ describe("Institution Contract", function () {
           { from: mockOwner_acc }
         )
       ).to.be.revertedWith("Atleast one course must be added");
-    });
-  });
-
-  describe("Fetching Institute Data", () => {
-    it("Only owner can request for Institute Data", async function () {
-      const institute_data = await institution.getInstituteData(
-        mockInstitute_acc.address
-        // { from: await certification.getAddress() }
-      );
-      assert.equal(institute_data[0], mockInstitute.institute_name);
-      assert.equal(institute_data[1], mockInstitute.institute_acronym);
-      assert.equal(institute_data[2], mockInstitute.institute_link);
-
-      const formattedInstituteCoursesData = institute_data[3].map((x) => {
-        return { course_name: x.course_name };
-      });
-      assert.equal(
-        JSON.stringify(formattedInstituteCoursesData),
-        JSON.stringify(mockInstituteCourses),
-        "the courses of the institute is incorrect"
-      );
     });
   });
 });

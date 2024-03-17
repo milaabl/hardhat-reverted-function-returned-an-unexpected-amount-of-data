@@ -55,6 +55,15 @@ contract Certification {
         }
     }
 
+    function getInstituteData(address institutionAddress) external view returns (
+            string memory instituteName,
+            string memory instituteAcronym,
+            string memory instituteLink,
+            Institution.Course[] memory instituteCourses
+        ) {
+            (instituteName, instituteAcronym, instituteLink, instituteCourses) = institution.getInstituteData(institutionAddress);
+        }
+
     // Generate Certificate
     function generateCertificate(
         string memory _id,

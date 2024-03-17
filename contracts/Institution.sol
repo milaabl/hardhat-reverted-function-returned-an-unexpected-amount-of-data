@@ -10,8 +10,8 @@ contract Institution {
     address public owner;
 
     // Mappings
-    mapping(address => Institute) private institutes; // Institutes Mapping
-    mapping(address => Course[]) private instituteCourses; // Courses Mapping
+    mapping(address => Institute) public institutes; // Institutes Mapping
+    mapping(address => Course[]) public instituteCourses; // Courses Mapping
 
     // Events
     event instituteAdded(string _instituteName);
@@ -105,24 +105,25 @@ contract Institution {
     )
         public
         view
-        returns (string memory, string memory, string memory, Course[] memory)
+        returns (string memory instituteName, string memory instituteAcronym, string memory instituteLink, Course[] memory courses)
     {
         require(
             Certification(msg.sender).owner() == owner,
             "Incorrect smart contract & authorizations!"
         );
+
         Institute memory temp = institutes[_address];
         bytes memory tempEmptyStringNameTest = bytes(temp.institute_name);
         require(
             tempEmptyStringNameTest.length > 0,
             "Institute does not exist!"
         );
-        return (
-            temp.institute_name,
-            temp.institute_acronym,
-            temp.institute_link,
-            instituteCourses[_address]
-        );
+
+
+        instituteName = temp.institute_name;
+        instituteAcronym = temp.institute_acronym;
+        instituteLink = temp.institute_link;
+        courses = instituteCourses[_address];
     }
 
     function checkInstitutePermission(
